@@ -1,0 +1,22 @@
+{
+  "semi": true,
+  "trailingComma": "all",
+  "singleQuote": false,
+  "printWidth": 140,
+  "tabWidth": 2,
+  "bracketSpacing": true,
+  "overrides": [
+    {
+      "files": "*.json",
+      "options": {
+        "tabWidth": 4
+      }
+    },
+    {
+      "files": "package.json",
+      "options": {
+        "tabWidth": 2
+      }
+    }
+  ]
+}
