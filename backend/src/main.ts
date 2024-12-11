@@ -36,7 +36,7 @@ async function bootstrap() {
     }),
   );
 
-  // app.use(cookieParser(config.getOrThrow<string>("COOKIES_SECRET")));
+  app.use(cookieParser(config.getOrThrow<string>("COOKIES_SECRET")));
 
   app.useGlobalPipes(
     new ValidationPipe({
