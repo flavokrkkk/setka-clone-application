@@ -1,10 +1,26 @@
-import { Module } from "@nestjs/common";
+import { forwardRef, Module } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { AuthController } from "./auth.controller";
 import { UserService } from "@/user/user.service";
+import { ProviderModule } from "./provider/provider.module";
+import { ConfigModule, ConfigService } from "@nestjs/config";
+import { getProvidersConfig } from "@/config/providers.config";
+import { EmailConfirmationService } from "./email-confirmation/email-confirmation.service";
+import { MailService } from "@/libs/mail/mail.service";
+import { EmailConfirmationModule } from "./email-confirmation/email-confirmation.module";
 
 @Module({
+  imports: [
+    ProviderModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: getProvidersConfig,
+      inject: [ConfigService],
+    }),
+
+    forwardRef(() => EmailConfirmationModule),
+  ],
   controllers: [AuthController],
-  providers: [AuthService, UserService],
+  providers: [AuthService, UserService, MailService],
+  exports: [AuthService],
 })
 export class AuthModule {}

@@ -1,9 +1,12 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { IS_DEVELOP_ENV } from "./libs/common/utils/develop.util";
-import { PrismaModule } from './prisma/prisma.module';
-import { AuthModule } from './auth/auth.module';
-import { UserModule } from './user/user.module';
+import { PrismaModule } from "./prisma/prisma.module";
+import { AuthModule } from "./auth/auth.module";
+import { UserModule } from "./user/user.module";
+import { ProviderModule } from "./auth/provider/provider.module";
+import { MailModule } from "./libs/mail/mail.module";
+import { EmailConfirmationModule } from "./auth/email-confirmation/email-confirmation.module";
 
 @Module({
   imports: [
@@ -14,6 +17,9 @@ import { UserModule } from './user/user.module';
     PrismaModule,
     AuthModule,
     UserModule,
+    ProviderModule,
+    MailModule,
+    EmailConfirmationModule,
   ],
 })
 export class AppModule {}

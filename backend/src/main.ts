@@ -8,14 +8,15 @@ import * as session from "express-session";
 import { ms, StringValue } from "./libs/common/utils/ms.util";
 import { parseBoolean } from "./libs/common/utils/parse-boolean.util";
 import { RedisStore } from "connect-redis";
-
+import * as express from "express";
+import { join } from "path";
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   const config = app.get(ConfigService);
 
   const redis = new IOredis(config.getOrThrow<string>("REDIS_URI"));
-
+  app.use("/public", express.static(join(__dirname, "..", "public")));
   app.use(
     session({
       secret: config.getOrThrow<string>("SESSION_SECRET"),
