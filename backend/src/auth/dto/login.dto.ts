@@ -10,4 +10,8 @@ export class LoginDto {
   @IsNotEmpty({ message: "Поле пароль не может быть пустым." })
   @MinLength(6, { message: "Пароль должен содержать не менее 6 символов." })
   password: string;
+
+  @IsOptional()
+  @IsString()
+  code: string;
 }

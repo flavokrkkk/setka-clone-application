@@ -9,6 +9,7 @@ import { ConfigService } from "@nestjs/config";
 import { ProviderService } from "./provider/provider.service";
 import { PrismaService } from "@/prisma/prisma.service";
 import { EmailConfirmationService } from "./email-confirmation/email-confirmation.service";
+import { TwoFactorAuthService } from "./two-factor-auth/two-factor-auth.service";
 
 @Injectable()
 export class AuthService {
@@ -18,6 +19,7 @@ export class AuthService {
     private readonly providerService: ProviderService,
     private readonly configService: ConfigService,
     private readonly emailConfirmationService: EmailConfirmationService,
+    private readonly twoFactorAuthService: TwoFactorAuthService,
   ) {}
 
   public async register(req: Request, dto: RegisterDto) {
@@ -57,6 +59,19 @@ export class AuthService {
       await this.emailConfirmationService.sendVerificationToken(user);
       throw new UnauthorizedException("Ваш email не подтвержден. Пожалуйста, проверьте вашу почту и подтвердите адрес!");
     }
+
+    if (user.isTwoFactorEnabled) {
+      if (!dto.code) {
+        await this.twoFactorAuthService.sendTwoFactorToken(user.email);
+
+        return {
+          message: "Проверьте вашу почту. Требуется код двухфакторной аутентификации!",
+        };
+      }
+
+      await this.twoFactorAuthService.validateTwoFactorToken(user.email, dto.code);
+    }
+
     return this.saveSession(req, user);
   }
 

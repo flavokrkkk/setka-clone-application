@@ -1,7 +1,8 @@
-import { Controller, Get, HttpCode, HttpStatus, Param } from "@nestjs/common";
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Patch } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { Authorized } from "@/auth/decorators/authorized.decorator";
 import { Authorization } from "@/auth/decorators/auth.decorator";
+import { UpdateUserDto } from "./dto/update-user.dto";
 
 @Controller("users")
 export class UserController {
@@ -19,5 +20,12 @@ export class UserController {
   @HttpCode(HttpStatus.OK)
   public async findById(@Param("id") userId: string) {
     return this.userService.findById(userId);
+  }
+
+  @Patch("profile")
+  @Authorization()
+  @HttpCode(HttpStatus.OK)
+  public async updateProfile(@Authorized("id") userId: string, @Body() dto: UpdateUserDto) {
+    return this.userService.update(userId, dto);
   }
 }
