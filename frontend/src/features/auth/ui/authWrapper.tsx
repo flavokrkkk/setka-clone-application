@@ -1,6 +1,7 @@
 import { FC } from "react";
 import { EAuthModes, navigateAuthText } from "../lib/utils/mode";
 import { Link } from "react-router-dom";
+import AuthSocial from "./authSocial";
 
 interface IAuthWrapper {
   title: string;
@@ -21,8 +22,9 @@ const AuthWrapper: FC<IAuthWrapper> = ({ mode, title, children, onSubmit }) => {
         </div>
         <h2 className="text-sm text-center">{title}</h2>
       </section>
-      <form onSubmit={onSubmit} className="w-full space-y-6 px-6">
+      <form onSubmit={onSubmit} className="w-full px-6">
         {children}
+        <AuthSocial />
       </form>
       <p className="text-xs text-gray-400 ">
         {navigateAuthText[mode].hasAccount}

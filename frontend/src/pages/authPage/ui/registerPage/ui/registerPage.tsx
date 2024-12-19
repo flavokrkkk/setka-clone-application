@@ -1,8 +1,6 @@
 import { EAuthModes } from "@/features/auth/lib/utils/mode";
 import AuthWrapper from "@/features/auth/ui/authWrapper";
 import { Button } from "@/shared/ui";
-import { IconTypes } from "@/shared/ui/icon/lib";
-import { Icon } from "@/shared/ui/icon/ui/icon";
 import { Input } from "@/shared/ui/input/input";
 
 const RegisterPage = () => {
@@ -26,17 +24,7 @@ const RegisterPage = () => {
           <Input type="password" id="password" placeholder="Повторите пароль" />
         </div>
       </section>
-
-      <div className="w-full space-y-2">
-        <Button className="w-full">Войти</Button>
-        <Button className="w-full " type="button" variant={"outline"}>
-          <Icon type={IconTypes.YANDEX_OUTLINED} className="font-bold" /> Войти
-          через Яндекс
-        </Button>
-        <Button className="w-full" type="button" variant={"outline"}>
-          <Icon type={IconTypes.GOOGLE_OUTLINED} /> Войти через Google
-        </Button>
-      </div>
+      <Button className="w-full mt-4">Войти</Button>
     </AuthWrapper>
   );
 };
