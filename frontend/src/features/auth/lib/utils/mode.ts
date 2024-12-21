@@ -11,12 +11,12 @@ export const navigateAuthText: Record<
 > = {
   [EAuthModes.LOGIN]: {
     hasAccount: "Нет аккаунта?",
-    navigate: " Зарегестрироваться",
+    navigate: "Зарегестрироваться",
     path: ERouteNames.REGISTER,
   },
   [EAuthModes.REGISTER]: {
     hasAccount: "Уже есть аккаунт?",
-    navigate: " Войти",
+    navigate: "Войти",
     path: ERouteNames.LOGIN,
   },
 };
