@@ -13,15 +13,6 @@ const defaultQueryOptions: DefaultOptions = {
       Math.min(TIME.RETRY_DELAY_BASE * 2 ** attempt, TIME.RETRY_DELAY_MAX),
     select: (data) => data,
   },
-  mutations: {
-    retry: ERetryOptions.MUTATION_RETRIES,
-    onError: (error: Error) => {
-      console.error("Mutation failed:", error);
-    },
-    onSuccess: (data) => {
-      console.log("Mutation succeeded:", data);
-    },
-  },
 };
 export const queryClient = new QueryClient({
   defaultOptions: defaultQueryOptions,

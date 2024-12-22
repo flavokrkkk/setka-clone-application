@@ -14,9 +14,11 @@ import {
   FormMessage,
 } from "@/shared/ui/form/form";
 import clsx from "clsx";
-import { toast } from "sonner";
+import { useRegisterMutation } from "@/entities/auth/hooks/useQueryMutate";
 
 const RegisterForm = () => {
+  const { register, isLoadingRegister } = useRegisterMutation();
+
   const form = useForm<TypeRegisterSchema>({
     resolver: zodResolver(RegisterSchema),
     defaultValues: {
@@ -26,15 +28,17 @@ const RegisterForm = () => {
       passwordRepeat: "",
     },
   });
+
   const {
     handleSubmit,
     control,
+    reset,
     formState: { errors },
   } = form;
 
   const onFormSubmit = (values: TypeRegisterSchema) => {
-    console.log(values);
-    toast.success("Регистрация прошла");
+    register({ values });
+    reset();
   };
 
   return (
@@ -49,6 +53,7 @@ const RegisterForm = () => {
                 <FormItem className="space-y-1 relative">
                   <FormControl>
                     <Input
+                      disabled={isLoadingRegister}
                       type="name"
                       id="name"
                       placeholder="Имя"
@@ -72,6 +77,7 @@ const RegisterForm = () => {
                 <FormItem className="space-y-1 relative">
                   <FormControl>
                     <Input
+                      disabled={isLoadingRegister}
                       type="email"
                       id="email"
                       placeholder="Email"
@@ -95,6 +101,7 @@ const RegisterForm = () => {
                 <FormItem className="space-y-1 relative">
                   <FormControl>
                     <Input
+                      disabled={isLoadingRegister}
                       type="password"
                       id="password"
                       placeholder="Пароль"
@@ -102,7 +109,7 @@ const RegisterForm = () => {
                       {...field}
                     />
                   </FormControl>
-                  {errors.passwordRepeat && (
+                  {errors.password && (
                     <span className="absolute right-2 top-4 transform -translate-y-1/2 text-red-600">
                       <CircleAlert className="w-5 h-5" />
                     </span>
@@ -118,6 +125,7 @@ const RegisterForm = () => {
                 <FormItem className="space-y-1 relative">
                   <FormControl>
                     <Input
+                      disabled={isLoadingRegister}
                       type="password"
                       id="password-repeat"
                       placeholder="Повторите пароль"
@@ -137,7 +145,9 @@ const RegisterForm = () => {
               )}
             />
           </section>
-          <Button className="w-full mt-5">Зарегистрироваться</Button>
+          <Button disabled={isLoadingRegister} className="w-full mt-5">
+            Зарегистрироваться
+          </Button>
         </form>
       </Form>
     </AuthWrapper>

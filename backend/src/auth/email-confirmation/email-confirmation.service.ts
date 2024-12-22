@@ -22,36 +22,46 @@ export class EmailConfirmationService {
     const existingToken = await this.prismaService.token.findUnique({
       where: {
         token: dto.token,
-        type: TokenType.VERIFICATION,
       },
     });
 
-    if (!existingToken) throw new NotFoundException("Токен подтверждения не найден. Пожалуйста, убедитесь, что у вас правильный токен!");
+    if (!existingToken) {
+      throw new NotFoundException("Токен подтверждения не найден. Пожалуйста, убедитесь, что у вас правильный токен!");
+    }
 
     const hasExpired = new Date(existingToken.expiresIn) < new Date();
-
-    if (hasExpired) throw new BadRequestException("Токен подтверждения истек. Пожалуйста, запросите новый токен для подтверждения!");
+    if (hasExpired) {
+      throw new BadRequestException("Токен подтверждения истек. Пожалуйста, запросите новый токен для подтверждения!");
+    }
 
     const existingUser = await this.userService.findByEmail(existingToken.email);
-    if (!existingUser)
+    if (!existingUser) {
       throw new NotFoundException(
         "Пользователь с указанным адресом электронной почты не найден. Пожалуйста убедитесь, что вы ввели правильный email!",
       );
+    }
 
-    await this.prismaService.user.update({
-      where: {
-        id: existingUser.id,
-      },
-      data: {
-        isVerified: true,
-      },
-    });
+    if (existingUser.isVerified) {
+      throw new BadRequestException("Пользователь уже подтверждён.");
+    }
 
-    await this.prismaService.token.delete({
-      where: {
-        id: existingToken.id,
-        type: TokenType.VERIFICATION,
-      },
+    await this.prismaService.$transaction(async (prisma) => {
+      await prisma.user.update({
+        where: { id: existingUser.id },
+        data: { isVerified: true },
+      });
+
+      try {
+        await prisma.token.delete({
+          where: { id: existingToken.id },
+        });
+      } catch (error) {
+        if (error.code === "P2025") {
+          console.warn("Token already deleted:", existingToken.id);
+        } else {
+          throw error;
+        }
+      }
     });
 
     return this.authService.saveSession(req, existingUser);
@@ -73,16 +83,12 @@ export class EmailConfirmationService {
         type: TokenType.VERIFICATION,
       },
     });
-
     if (existingToken) {
-      await this.prismaService.token.delete({
-        where: {
-          id: existingToken.id,
-          type: TokenType.VERIFICATION,
-        },
-      });
+      if (new Date(existingToken.expiresIn) > new Date()) {
+        return existingToken;
+      }
+      await this.prismaService.token.delete({ where: { id: existingToken.id } });
     }
-
     const verificationToken = await this.prismaService.token.create({
       data: {
         email,

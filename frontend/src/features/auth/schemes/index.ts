@@ -1,2 +1,4 @@
-export * from "./registerSchemes";
-export * from "./loginSchemes";
+export * from "./registerSchema";
+export * from "./loginSchema";
+export * from "./resetPasswordSchema";
+export * from "./newPasswordSchema";

@@ -1,19 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  HttpCode,
-  HttpStatus,
-  Req,
-  Res,
-  UseGuards,
-  Query,
-  BadRequestException,
-} from "@nestjs/common";
+import { Controller, Get, Post, Body, Param, HttpCode, HttpStatus, Req, Res, UseGuards, Query, BadRequestException } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { RegisterDto } from "./dto/registrer.dto";
 import { Request, Response } from "express";
@@ -21,6 +6,7 @@ import { LoginDto } from "./dto/login.dto";
 import { AuthProviderGuard } from "./guards/provider.guard";
 import { ConfigService } from "@nestjs/config";
 import { ProviderService } from "./provider/provider.service";
+import { AuthGuard } from "./guards/auth.guard";
 
 @Controller("auth")
 export class AuthController {
@@ -32,8 +18,8 @@ export class AuthController {
 
   @Post("register")
   @HttpCode(HttpStatus.OK)
-  public async register(@Req() req: Request, @Body() dto: RegisterDto) {
-    return this.authService.register(req, dto);
+  public async register(@Body() dto: RegisterDto) {
+    return this.authService.register(dto);
   }
 
   @UseGuards(AuthProviderGuard)
@@ -47,7 +33,7 @@ export class AuthController {
     if (!code) throw new BadRequestException("Не был предоставлен код авторизации!");
     await this.authService.extractProfileFromCode(req, provider, code);
 
-    return res.redirect(`${this.configService.getOrThrow<string>("ALLOWED_ORIGIN")}/dashboard/settings`);
+    return res.redirect(`${this.configService.getOrThrow<string>("ALLOWED_ORIGIN")}/home`);
   }
 
   @UseGuards(AuthProviderGuard)
@@ -69,5 +55,14 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   public async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     return this.authService.logout(req, res);
+  }
+
+  @Get("check-session")
+  @UseGuards(AuthGuard)
+  checkSession(): { message: string; isAuthenticated: boolean } {
+    return {
+      message: "Пользователь авторизован",
+      isAuthenticated: true,
+    };
   }
 }

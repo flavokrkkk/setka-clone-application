@@ -3,6 +3,8 @@ import { ERouteNames } from "@/shared/utils/routes/path";
 export const enum EAuthModes {
   REGISTER,
   LOGIN,
+  RESET,
+  NEW,
 }
 
 export const navigateAuthText: Record<
@@ -17,6 +19,16 @@ export const navigateAuthText: Record<
   [EAuthModes.REGISTER]: {
     hasAccount: "Уже есть аккаунт?",
     navigate: "Войти",
+    path: ERouteNames.LOGIN,
+  },
+  [EAuthModes.RESET]: {
+    hasAccount: "",
+    navigate: "",
+    path: ERouteNames.LOGIN,
+  },
+  [EAuthModes.NEW]: {
+    hasAccount: "",
+    navigate: "",
     path: ERouteNames.LOGIN,
   },
 };
