@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   Injectable,
@@ -132,17 +133,20 @@ export class AuthService {
   public async extractProfileFromCode(req: Request, provider: string, code: string) {
     const providerInstance = this.providerService.findByService(provider);
     const profile = await providerInstance.findUserByCode(code);
+
+    if (!profile) {
+      throw new BadRequestException("Invalid or expired authorization code.");
+    }
+
     const account = await this.prismaService.account.findFirst({
-      where: {
-        id: profile.id,
-        provider: profile.provider,
-      },
+      where: { id: profile.id, provider: profile.provider },
+      include: { user: true },
     });
 
-    let user = account?.userId ? await this.userService.findById(account.userId) : null;
+    let user = account?.user || null;
 
     if (user) {
-      return this.saveSession(req, user);
+      return this.handleAuthenticatedUser(user);
     }
 
     user = await this.userService.create(
@@ -165,9 +169,9 @@ export class AuthService {
           expiresAt: profile.expires_at,
         },
       });
-
-      return this.saveSession(req, user);
     }
+
+    return this.handleAuthenticatedUser(user);
   }
 
   public async logout(userId: string): Promise<void> {
@@ -184,34 +188,27 @@ export class AuthService {
     });
   }
 
-  public async saveSession(req: Request, user: User) {
-    return new Promise((resolve, reject) => {
-      req.session.userId = user.id;
-
-      req.session.save((error) => {
-        if (error) {
-          return reject(
-            new InternalServerErrorException("Не удалось сохранить сессию. Проверьте, правильно ли настроены параметры сессии!"),
-          );
-        }
-
-        resolve(user);
-      });
-    });
+  public async handleAuthenticatedUser(user: User) {
+    const tokens = await this.getTokens(user.id, user.email);
+    await this.updateRtHash(user.id, tokens.refresh_token);
+    return tokens;
   }
 
   public async refreshToken(userId: string, rt: string) {
+    if (!rt || rt.trim() === "") {
+      throw new BadRequestException("Refresh token must be provided");
+    }
+
     const user = await this.prismaService.user.findUnique({
-      where: {
-        id: userId,
-      },
+      where: { id: userId },
     });
 
-    if (!user) throw new NotFoundException("Пользователь не найден! Проверьте данные для входа");
+    if (!user || !user.hashedRt) throw new ForbiddenException("Access Denied");
 
     const rtMatches = await verify(user.hashedRt, rt);
 
     if (!rtMatches) throw new ForbiddenException("Invalid refresh token");
+
     const tokens = await this.getTokens(user.id, user.email);
     await this.updateRtHash(user.id, tokens.refresh_token);
 

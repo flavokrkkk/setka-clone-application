@@ -64,7 +64,10 @@ export class EmailConfirmationService {
       }
     });
 
-    return this.authService.saveSession(req, existingUser);
+    await this.authService.handleAuthenticatedUser(existingUser);
+    return {
+      message: "Вы успешно подтвердили почту!",
+    };
   }
   public async sendVerificationToken(user: User) {
     const verificationToken = await this.generateVerificationToken(user.email);

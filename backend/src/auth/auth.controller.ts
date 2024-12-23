@@ -39,7 +39,6 @@ export class AuthController {
   ) {
     if (!code) throw new BadRequestException("Не был предоставлен код авторизации!");
     await this.authService.extractProfileFromCode(req, provider, code);
-
     return res.redirect(`${this.configService.getOrThrow<string>("ALLOWED_ORIGIN")}/home`);
   }
 
