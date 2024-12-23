@@ -5,16 +5,17 @@ import { UserService } from "@/user/user.service";
 import { ProviderModule } from "./provider/provider.module";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { getProvidersConfig } from "@/config/providers.config";
-import { EmailConfirmationService } from "./email-confirmation/email-confirmation.service";
 import { MailService } from "@/libs/mail/mail.service";
 import { EmailConfirmationModule } from "./email-confirmation/email-confirmation.module";
-import { TwoFactorAuthModule } from "./two-factor-auth/two-factor-auth.module";
 import { TwoFactorAuthService } from "./two-factor-auth/two-factor-auth.service";
+import { AtStrategy } from "./strategies/at.strategy";
+import { RtStrategy } from "./strategies/rt.strategy";
+import { JwtModule, JwtService } from "@nestjs/jwt";
 
 @Module({
   imports: [
     ProviderModule.registerAsync({
-      imports: [ConfigModule],
+      imports: [ConfigModule, JwtModule.register({})],
       useFactory: getProvidersConfig,
       inject: [ConfigService],
     }),
@@ -22,7 +23,7 @@ import { TwoFactorAuthService } from "./two-factor-auth/two-factor-auth.service"
     forwardRef(() => EmailConfirmationModule),
   ],
   controllers: [AuthController],
-  providers: [AuthService, UserService, MailService, TwoFactorAuthService],
+  providers: [AuthService, UserService, MailService, TwoFactorAuthService, AtStrategy, RtStrategy, JwtService],
   exports: [AuthService],
 })
 export class AuthModule {}

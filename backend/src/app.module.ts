@@ -9,6 +9,8 @@ import { MailModule } from "./libs/mail/mail.module";
 import { EmailConfirmationModule } from "./auth/email-confirmation/email-confirmation.module";
 import { PasswordRecoveryModule } from "./auth/password-recovery/password-recovery.module";
 import { TwoFactorAuthModule } from "./auth/two-factor-auth/two-factor-auth.module";
+import { APP_GUARD } from "@nestjs/core";
+import { AtGuard } from "./auth/guards/at.guard";
 
 @Module({
   imports: [
@@ -24,6 +26,12 @@ import { TwoFactorAuthModule } from "./auth/two-factor-auth/two-factor-auth.modu
     EmailConfirmationModule,
     PasswordRecoveryModule,
     TwoFactorAuthModule,
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: AtGuard,
+    },
   ],
 })
 export class AppModule {}

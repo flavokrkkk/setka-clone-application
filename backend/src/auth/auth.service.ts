@@ -1,16 +1,25 @@
-import { ConflictException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from "@nestjs/common";
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+  UnauthorizedException,
+} from "@nestjs/common";
 import { RegisterDto } from "./dto/registrer.dto";
 import { UserService } from "@/user/user.service";
 import { AuthMethod, User } from "@prisma/__generated__";
-import { Request, Response } from "express";
+import { Request } from "express";
 import { LoginDto } from "./dto/login.dto";
-import { verify } from "argon2";
 import { ConfigService } from "@nestjs/config";
 import { ProviderService } from "./provider/provider.service";
 import { PrismaService } from "@/prisma/prisma.service";
 import { EmailConfirmationService } from "./email-confirmation/email-confirmation.service";
 import { TwoFactorAuthService } from "./two-factor-auth/two-factor-auth.service";
-
+import { JwtService } from "@nestjs/jwt";
+import { JwtPayload } from "./strategies/at.strategy";
+import { verify } from "argon2";
+import { Tokens } from "./types/tokens.types";
 @Injectable()
 export class AuthService {
   public constructor(
@@ -20,7 +29,31 @@ export class AuthService {
     private readonly configService: ConfigService,
     private readonly emailConfirmationService: EmailConfirmationService,
     private readonly twoFactorAuthService: TwoFactorAuthService,
+    private readonly jwtService: JwtService,
   ) {}
+
+  public async getTokens(userId: string, email: string): Promise<Tokens> {
+    const jwtPayload: JwtPayload = {
+      sub: userId,
+      email: email,
+    };
+
+    const [at, rt] = await Promise.all([
+      this.jwtService.signAsync(jwtPayload, {
+        secret: this.configService.getOrThrow<string>("AT_SECRET"),
+        expiresIn: this.configService.getOrThrow<string>("JWT_ACCESS_EXPIRES"),
+      }),
+      this.jwtService.signAsync(jwtPayload, {
+        secret: this.configService.getOrThrow<string>("RT_SECRET"),
+        expiresIn: this.configService.getOrThrow<string>("JWT_REFRESH_EXPIRES"),
+      }),
+    ]);
+
+    return {
+      access_token: at,
+      refresh_token: rt,
+    };
+  }
 
   public async register(dto: RegisterDto) {
     const isExists = await this.userService.findByEmail(dto.email);
@@ -39,10 +72,14 @@ export class AuthService {
       false,
     );
 
-    await this.emailConfirmationService.sendVerificationToken(newUser);
+    if (!newUser) throw new InternalServerErrorException("Ошибка сервера");
 
+    const tokens = await this.getTokens(newUser.id, newUser.email);
+    await this.emailConfirmationService.sendVerificationToken(newUser);
+    await this.updateRtHash(newUser.id, tokens.refresh_token);
     return {
       message: "Вы успешно зарегистрировались. Пожалуйста, подтвердите ваш email. Сообщение было отправлено на ваш почтовый адрес!",
+      data: tokens,
     };
   }
 
@@ -72,7 +109,24 @@ export class AuthService {
       await this.twoFactorAuthService.validateTwoFactorToken(user.email, dto.code);
     }
 
-    return this.saveSession(req, user);
+    const tokens = await this.getTokens(user.id, user.email);
+    await this.updateRtHash(user.id, tokens.refresh_token);
+    return {
+      message: "Вы успешно авторизовались!",
+      data: tokens,
+    };
+  }
+
+  public async updateRtHash(userId: string, refreshToken: string) {
+    const hash = await this.userService.hashData(refreshToken);
+    await this.prismaService.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        hashedRt: hash,
+      },
+    });
   }
 
   public async extractProfileFromCode(req: Request, provider: string, code: string) {
@@ -116,19 +170,17 @@ export class AuthService {
     }
   }
 
-  public async logout(req: Request, res: Response): Promise<void> {
-    return new Promise((resolve, reject) => {
-      req.session.destroy((error) => {
-        if (error)
-          return reject(
-            new InternalServerErrorException(
-              "Не удалось завершить сессию. Возможно, возникла проблема с сервером или сессия уже была завершена!",
-            ),
-          );
-
-        res.clearCookie(this.configService.getOrThrow<string>("SESSION_NAME"));
-        resolve();
-      });
+  public async logout(userId: string): Promise<void> {
+    await this.prismaService.user.update({
+      where: {
+        id: userId,
+        hashedRt: {
+          not: null,
+        },
+      },
+      data: {
+        hashedRt: null,
+      },
     });
   }
 
@@ -146,5 +198,26 @@ export class AuthService {
         resolve(user);
       });
     });
+  }
+
+  public async refreshToken(userId: string, rt: string) {
+    const user = await this.prismaService.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+
+    if (!user) throw new NotFoundException("Пользователь не найден! Проверьте данные для входа");
+
+    const rtMatches = await verify(user.hashedRt, rt);
+
+    if (!rtMatches) throw new ForbiddenException("Invalid refresh token");
+    const tokens = await this.getTokens(user.id, user.email);
+    await this.updateRtHash(user.id, tokens.refresh_token);
+
+    return {
+      message: "Refresh token",
+      data: tokens,
+    };
   }
 }

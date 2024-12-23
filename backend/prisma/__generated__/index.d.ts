@@ -283,7 +283,7 @@ export namespace Prisma {
 
   /**
    * Prisma Client JS version: 6.0.1
-   * Query Engine version: 5dbef10bdbfb579e07d35cc85fb1518d357cb99e
+   * Query Engine version: 11f085a2012c0f4778414c8db2651556ee0ef959
    */
   export type PrismaVersion = {
     client: string
@@ -1109,6 +1109,7 @@ export namespace Prisma {
     method: $Enums.AuthMethod | null
     createdAt: Date | null
     updatedAt: Date | null
+    hashedRt: string | null
   }
 
   export type UserMaxAggregateOutputType = {
@@ -1123,6 +1124,7 @@ export namespace Prisma {
     method: $Enums.AuthMethod | null
     createdAt: Date | null
     updatedAt: Date | null
+    hashedRt: string | null
   }
 
   export type UserCountAggregateOutputType = {
@@ -1137,6 +1139,7 @@ export namespace Prisma {
     method: number
     createdAt: number
     updatedAt: number
+    hashedRt: number
     _all: number
   }
 
@@ -1153,6 +1156,7 @@ export namespace Prisma {
     method?: true
     createdAt?: true
     updatedAt?: true
+    hashedRt?: true
   }
 
   export type UserMaxAggregateInputType = {
@@ -1167,6 +1171,7 @@ export namespace Prisma {
     method?: true
     createdAt?: true
     updatedAt?: true
+    hashedRt?: true
   }
 
   export type UserCountAggregateInputType = {
@@ -1181,6 +1186,7 @@ export namespace Prisma {
     method?: true
     createdAt?: true
     updatedAt?: true
+    hashedRt?: true
     _all?: true
   }
 
@@ -1268,6 +1274,7 @@ export namespace Prisma {
     method: $Enums.AuthMethod
     createdAt: Date
     updatedAt: Date
+    hashedRt: string | null
     _count: UserCountAggregateOutputType | null
     _min: UserMinAggregateOutputType | null
     _max: UserMaxAggregateOutputType | null
@@ -1299,6 +1306,7 @@ export namespace Prisma {
     method?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    hashedRt?: boolean
     accounts?: boolean | User$accountsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
@@ -1315,6 +1323,7 @@ export namespace Prisma {
     method?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    hashedRt?: boolean
   }, ExtArgs["result"]["user"]>
 
   export type UserSelectScalar = {
@@ -1329,6 +1338,7 @@ export namespace Prisma {
     method?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    hashedRt?: boolean
   }
 
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -1354,6 +1364,7 @@ export namespace Prisma {
       method: $Enums.AuthMethod
       createdAt: Date
       updatedAt: Date
+      hashedRt: string | null
     }, ExtArgs["result"]["user"]>
     composites: {}
   }
@@ -1759,6 +1770,7 @@ export namespace Prisma {
     readonly method: FieldRef<"User", 'AuthMethod'>
     readonly createdAt: FieldRef<"User", 'DateTime'>
     readonly updatedAt: FieldRef<"User", 'DateTime'>
+    readonly hashedRt: FieldRef<"User", 'String'>
   }
     
 
@@ -4052,7 +4064,8 @@ export namespace Prisma {
     isTwoFactorEnabled: 'isTwoFactorEnabled',
     method: 'method',
     createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
+    updatedAt: 'updatedAt',
+    hashedRt: 'hashedRt'
   };
 
   export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -4237,6 +4250,7 @@ export namespace Prisma {
     method?: EnumAuthMethodFilter<"User"> | $Enums.AuthMethod
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
+    hashedRt?: StringNullableFilter<"User"> | string | null
     accounts?: AccountListRelationFilter
   }
 
@@ -4252,6 +4266,7 @@ export namespace Prisma {
     method?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    hashedRt?: SortOrderInput | SortOrder
     accounts?: AccountOrderByRelationAggregateInput
   }
 
@@ -4270,6 +4285,7 @@ export namespace Prisma {
     method?: EnumAuthMethodFilter<"User"> | $Enums.AuthMethod
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
+    hashedRt?: StringNullableFilter<"User"> | string | null
     accounts?: AccountListRelationFilter
   }, "id" | "email">
 
@@ -4285,6 +4301,7 @@ export namespace Prisma {
     method?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    hashedRt?: SortOrderInput | SortOrder
     _count?: UserCountOrderByAggregateInput
     _max?: UserMaxOrderByAggregateInput
     _min?: UserMinOrderByAggregateInput
@@ -4305,6 +4322,7 @@ export namespace Prisma {
     method?: EnumAuthMethodWithAggregatesFilter<"User"> | $Enums.AuthMethod
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
+    hashedRt?: StringNullableWithAggregatesFilter<"User"> | string | null
   }
 
   export type AccountWhereInput = {
@@ -4453,6 +4471,7 @@ export namespace Prisma {
     method: $Enums.AuthMethod
     createdAt?: Date | string
     updatedAt?: Date | string
+    hashedRt?: string | null
     accounts?: AccountCreateNestedManyWithoutUserInput
   }
 
@@ -4468,6 +4487,7 @@ export namespace Prisma {
     method: $Enums.AuthMethod
     createdAt?: Date | string
     updatedAt?: Date | string
+    hashedRt?: string | null
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -4483,6 +4503,7 @@ export namespace Prisma {
     method?: EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    hashedRt?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUpdateManyWithoutUserNestedInput
   }
 
@@ -4498,6 +4519,7 @@ export namespace Prisma {
     method?: EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    hashedRt?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -4513,6 +4535,7 @@ export namespace Prisma {
     method: $Enums.AuthMethod
     createdAt?: Date | string
     updatedAt?: Date | string
+    hashedRt?: string | null
   }
 
   export type UserUpdateManyMutationInput = {
@@ -4527,6 +4550,7 @@ export namespace Prisma {
     method?: EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    hashedRt?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type UserUncheckedUpdateManyInput = {
@@ -4541,6 +4565,7 @@ export namespace Prisma {
     method?: EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    hashedRt?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type AccountCreateInput = {
@@ -4776,6 +4801,7 @@ export namespace Prisma {
     method?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    hashedRt?: SortOrder
   }
 
   export type UserMaxOrderByAggregateInput = {
@@ -4790,6 +4816,7 @@ export namespace Prisma {
     method?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    hashedRt?: SortOrder
   }
 
   export type UserMinOrderByAggregateInput = {
@@ -4804,6 +4831,7 @@ export namespace Prisma {
     method?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    hashedRt?: SortOrder
   }
 
   export type StringWithAggregatesFilter<$PrismaModel = never> = {
@@ -5373,6 +5401,7 @@ export namespace Prisma {
     method: $Enums.AuthMethod
     createdAt?: Date | string
     updatedAt?: Date | string
+    hashedRt?: string | null
   }
 
   export type UserUncheckedCreateWithoutAccountsInput = {
@@ -5387,6 +5416,7 @@ export namespace Prisma {
     method: $Enums.AuthMethod
     createdAt?: Date | string
     updatedAt?: Date | string
+    hashedRt?: string | null
   }
 
   export type UserCreateOrConnectWithoutAccountsInput = {
@@ -5417,6 +5447,7 @@ export namespace Prisma {
     method?: EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    hashedRt?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type UserUncheckedUpdateWithoutAccountsInput = {
@@ -5431,6 +5462,7 @@ export namespace Prisma {
     method?: EnumAuthMethodFieldUpdateOperationsInput | $Enums.AuthMethod
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    hashedRt?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type AccountCreateManyUserInput = {

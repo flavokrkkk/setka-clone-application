@@ -22,6 +22,11 @@ export class UserService {
 
     return user;
   }
+
+  public async hashData(data: string) {
+    return await hash(data);
+  }
+
   public async findByEmail(email: string) {
     const user = await this.prismaService.user.findUnique({
       where: {

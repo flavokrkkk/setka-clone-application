@@ -10,6 +10,7 @@ import { parseBoolean } from "./libs/common/utils/parse-boolean.util";
 import { RedisStore } from "connect-redis";
 import * as express from "express";
 import { join } from "path";
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
