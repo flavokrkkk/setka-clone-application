@@ -1,9 +1,15 @@
 import YandexOutlined from "@shared/assets/social/yandex.svg";
 import GoogleOutlined from "@shared/assets/social/google.svg";
+import OnlineOutlined from "@shared/assets/icons/online.svg";
+import OfflineOutlined from "@shared/assets/icons/offline.svg";
+import SleepOutlined from "@shared/assets/icons/sleep.svg";
 
 export const enum IconTypes {
   YANDEX_OUTLINED,
   GOOGLE_OUTLINED,
+  ONLINE_OUTLINED,
+  OFFLINE_OUTLINED,
+  SLEEP_OUTLINED,
 }
 
 export type IconDictionaryType = {
@@ -13,6 +19,9 @@ export type IconDictionaryType = {
 export const IconDictionary: IconDictionaryType = {
   [IconTypes.YANDEX_OUTLINED]: YandexOutlined,
   [IconTypes.GOOGLE_OUTLINED]: GoogleOutlined,
+  [IconTypes.ONLINE_OUTLINED]: OnlineOutlined,
+  [IconTypes.OFFLINE_OUTLINED]: OfflineOutlined,
+  [IconTypes.SLEEP_OUTLINED]: SleepOutlined,
 };
 export const enum IconSizes {
   SMALL,

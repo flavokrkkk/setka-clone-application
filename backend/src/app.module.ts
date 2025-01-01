@@ -11,6 +11,7 @@ import { PasswordRecoveryModule } from "./auth/password-recovery/password-recove
 import { TwoFactorAuthModule } from "./auth/two-factor-auth/two-factor-auth.module";
 import { APP_GUARD } from "@nestjs/core";
 import { AtGuard } from "./auth/guards/at.guard";
+import { StorageModule } from "./storage/storage.module";
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { AtGuard } from "./auth/guards/at.guard";
     EmailConfirmationModule,
     PasswordRecoveryModule,
     TwoFactorAuthModule,
+    StorageModule,
   ],
   providers: [
     {

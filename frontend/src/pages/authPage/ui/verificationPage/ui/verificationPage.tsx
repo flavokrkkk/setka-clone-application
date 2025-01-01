@@ -1,4 +1,4 @@
-import VerificateForm from "@/features/auth/ui/verificateForm";
+import VerificateForm from "@/features/auth/ui/verificateForm/ui/verificateForm";
 
 const VerificationPage = () => {
   return <VerificateForm />;

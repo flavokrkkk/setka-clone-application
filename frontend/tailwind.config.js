@@ -53,6 +53,13 @@ export default {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
         },
+        gray: {
+          200: "#202020",
+          300: "#19191A",
+          350: "#23272A",
+          400: "#36393F",
+          500: "#282828",
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

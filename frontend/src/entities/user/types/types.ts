@@ -23,15 +23,9 @@ export interface IAccount {
 
 export interface IUser {
   id: string;
-  createdAt: Date;
-  updatedAt: Date;
   email: string;
-  password: string;
-  displayName: string;
+  username: string;
   picture: string;
-  role: UserRole;
-  isVerified: boolean;
-  isTwoFactorEnabled: boolean;
-  method: AuthMethod;
-  accounts: IAccount[];
+  isVerified: true;
+  isTwoFactorEnabled: false;
 }

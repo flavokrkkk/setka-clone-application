@@ -1,30 +1,28 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from "@nestjs/common";
 import { UserService } from "@/user/user.service";
-import { Request } from "express";
+import * as jwt from "jsonwebtoken"; // библиотека для работы с JWT
+import { ConfigService } from "@nestjs/config";
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  public constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly configService: ConfigService,
+  ) {}
 
-  public async canActivate(context: ExecutionContext): Promise<boolean> {
+  canActivate(context: ExecutionContext): boolean | Promise<boolean> {
     const request = context.switchToHttp().getRequest();
+    const token = request.headers["authorization"]?.split(" ")[1];
 
-    if (typeof request.session.userId === "undefined") {
-      throw new UnauthorizedException("Недостаточно прав. У вас нет прав доступа к этому ресурсу!");
+    if (!token) {
+      throw new UnauthorizedException("Token is missing");
     }
-
     try {
-      const user = await this.userService.findById(request.session.userId);
-
-      if (!user) {
-        throw new UnauthorizedException("Пользователь не найден. Пожалуйста, авторизуйтесь снова.");
-      }
-
+      const user = jwt.verify(token, this.configService.getOrThrow<string>("AT_SECRET"));
       request.user = user;
-
       return true;
-    } catch (error) {
-      throw new UnauthorizedException("Ошибка при получении пользователя. Попробуйте снова.");
+    } catch (e) {
+      throw new UnauthorizedException("Invalid or expired token");
     }
   }
 }

@@ -2,6 +2,7 @@ import { ERouteNames } from "@/shared/utils/routes/path";
 
 export const enum EAuthModes {
   REGISTER,
+  TWO_FACTOR,
   LOGIN,
   RESET,
   NEW,
@@ -27,6 +28,11 @@ export const navigateAuthText: Record<
     path: ERouteNames.LOGIN,
   },
   [EAuthModes.NEW]: {
+    hasAccount: "",
+    navigate: "",
+    path: ERouteNames.LOGIN,
+  },
+  [EAuthModes.TWO_FACTOR]: {
     hasAccount: "",
     navigate: "",
     path: ERouteNames.LOGIN,

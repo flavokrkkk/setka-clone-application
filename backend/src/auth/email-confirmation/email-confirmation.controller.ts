@@ -2,7 +2,9 @@ import { Body, Controller, HttpCode, HttpStatus, Post, Req } from "@nestjs/commo
 import { EmailConfirmationService } from "./email-confirmation.service";
 import { Request } from "express";
 import { ConfirmationDto } from "./dto/confirmation.dto";
+import { Public } from "../decorators/public.decorator";
 
+@Public()
 @Controller("auth/email-confirmation")
 export class EmailConfirmationController {
   constructor(private readonly emailConfirmationService: EmailConfirmationService) {}

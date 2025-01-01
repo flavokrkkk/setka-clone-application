@@ -6,9 +6,12 @@ import axios, {
 } from "axios";
 import { TokenService } from "@/entities/token";
 import { RequestOptions } from "https";
+import tokenService from "@/entities/token/libs/tokenService";
+import { catchError } from "../utils/catchError";
+import { authService } from "@/entities/auth/libs";
 
 export class AxiosClient {
-  private client: AxiosInstance;
+  private baseQueryV1Instance: AxiosInstance;
 
   constructor(baseURL: string, withAuth = false) {
     const config: AxiosRequestConfig = {
@@ -19,15 +22,16 @@ export class AxiosClient {
       },
     };
 
-    this.client = axios.create(config);
+    this.baseQueryV1Instance = axios.create(config);
 
     if (withAuth) {
+      this.addAuthResponseInterceptor();
       this.addAuthInterceptor();
     }
   }
 
   private addAuthInterceptor() {
-    this.client.interceptors.request.use((config) => {
+    this.baseQueryV1Instance.interceptors.request.use((config) => {
       const token = TokenService.getAccessToken();
       if (config && config.headers && token) {
         config.headers["Authorization"] = `Bearer ${token}`;
@@ -36,6 +40,43 @@ export class AxiosClient {
       }
       return config;
     });
+  }
+
+  public addAuthResponseInterceptor() {
+    this.baseQueryV1Instance.interceptors.response.use(
+      (response) => {
+        return response;
+      },
+      async (error) => {
+        const originalRequest = error.config;
+
+        if (error.response?.status === 401 && !originalRequest._retry) {
+          originalRequest._retry = true;
+
+          try {
+            const {
+              data: { access_token: accessToken },
+            } = await authService.refreshToken();
+
+            if (accessToken) {
+              tokenService.setAccessToken(accessToken);
+            } else {
+              tokenService.deleteAccessToken();
+            }
+
+            return this.baseQueryV1Instance(originalRequest);
+          } catch (error) {
+            if (catchError(error) === "jwt expired") {
+              tokenService.deleteAccessToken();
+            }
+
+            return Promise.reject(error);
+          }
+        }
+
+        return Promise.reject(error);
+      },
+    );
   }
 
   private handleResponse<T>(response: AxiosResponse<T>): AxiosResponse<T> {
@@ -52,7 +93,7 @@ export class AxiosClient {
     params: Omit<RequestOptions, "body"> = {},
   ): Promise<AxiosResponse<T>> {
     try {
-      const response = await this.client.get<T>(url, { params });
+      const response = await this.baseQueryV1Instance.get<T>(url, { params });
       return this.handleResponse(response);
     } catch (error) {
       this.handleError(error as AxiosError<{ message?: string }>);
@@ -65,7 +106,11 @@ export class AxiosClient {
     config?: AxiosRequestConfig,
   ): Promise<AxiosResponse<T>> {
     try {
-      const response = await this.client.post<T>(url, data, config);
+      const response = await this.baseQueryV1Instance.post<T>(
+        url,
+        data,
+        config,
+      );
       return this.handleResponse(response);
     } catch (error) {
       this.handleError(error as AxiosError<{ message?: string }>);
@@ -78,7 +123,7 @@ export class AxiosClient {
     config?: AxiosRequestConfig,
   ): Promise<AxiosResponse<T>> {
     try {
-      const response = await this.client.put<T>(url, data, config);
+      const response = await this.baseQueryV1Instance.put<T>(url, data, config);
       return this.handleResponse(response);
     } catch (error) {
       this.handleError(error as AxiosError<{ message?: string }>);
@@ -91,7 +136,11 @@ export class AxiosClient {
     config?: AxiosRequestConfig,
   ): Promise<AxiosResponse<T>> {
     try {
-      const response = await this.client.patch<T>(url, data, config);
+      const response = await this.baseQueryV1Instance.patch<T>(
+        url,
+        data,
+        config,
+      );
       return this.handleResponse(response);
     } catch (error) {
       this.handleError(error as AxiosError<{ message?: string }>);
@@ -103,7 +152,7 @@ export class AxiosClient {
     config?: AxiosRequestConfig,
   ): Promise<AxiosResponse<T>> {
     try {
-      const response = await this.client.delete<T>(url, config);
+      const response = await this.baseQueryV1Instance.delete<T>(url, config);
       return this.handleResponse(response);
     } catch (error) {
       this.handleError(error as AxiosError<{ message?: string }>);

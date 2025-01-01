@@ -2,6 +2,7 @@ import { MailService } from "@/libs/mail/mail.service";
 import { PrismaService } from "@/prisma/prisma.service";
 import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { Token, TokenType } from "@prisma/__generated__";
+import { Tokens } from "../types/tokens.types";
 
 @Injectable()
 export class TwoFactorAuthService {
@@ -10,7 +11,7 @@ export class TwoFactorAuthService {
     private readonly prismaService: PrismaService,
   ) {}
 
-  public async validateTwoFactorToken(email: string, code: string) {
+  public async validateTwoFactorToken(email: string, code: string, tokens: Tokens) {
     const existingToken = await this.prismaService.token.findFirst({
       where: {
         email,
@@ -37,7 +38,10 @@ export class TwoFactorAuthService {
         type: TokenType.TWO_FACTOR,
       },
     });
-    return true;
+    return {
+      message: "Вы подтвердили авторизацию. Добро пожаловать!",
+      data: tokens,
+    };
   }
   public async sendTwoFactorToken(email: string) {
     const twoFactorToken = await this.generateTwoFactorToken(email);

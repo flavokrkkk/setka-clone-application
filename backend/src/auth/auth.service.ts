@@ -19,8 +19,10 @@ import { EmailConfirmationService } from "./email-confirmation/email-confirmatio
 import { TwoFactorAuthService } from "./two-factor-auth/two-factor-auth.service";
 import { JwtService } from "@nestjs/jwt";
 import { JwtPayload } from "./strategies/at.strategy";
-import { verify } from "argon2";
+import { hash, verify } from "argon2";
 import { Tokens } from "./types/tokens.types";
+import { StorageService } from "@/storage/storage.service";
+import * as jwt from "jsonwebtoken";
 @Injectable()
 export class AuthService {
   public constructor(
@@ -31,6 +33,7 @@ export class AuthService {
     private readonly emailConfirmationService: EmailConfirmationService,
     private readonly twoFactorAuthService: TwoFactorAuthService,
     private readonly jwtService: JwtService,
+    private readonly storageService: StorageService,
   ) {}
 
   public async getTokens(userId: string, email: string): Promise<Tokens> {
@@ -64,14 +67,16 @@ export class AuthService {
         "Регистрация не удалась. Пользователь с таким email уже существует. Пожалуйста, используйте другой email или войдите в систему!",
       );
 
-    const newUser = await this.userService.create(
-      dto.email,
-      dto.password,
-      dto.name,
-      "", // - можно устанавливать фотографию по умолчанию
-      AuthMethod.CREDENTIALS,
-      false,
-    );
+    const defaultAvatarUrl = this.storageService.getDefaultAvatar();
+
+    const newUser = await this.userService.create({
+      email: dto.email,
+      password: dto.password,
+      username: dto.name,
+      picture: defaultAvatarUrl,
+      method: AuthMethod.CREDENTIALS,
+      isVerified: false,
+    });
 
     if (!newUser) throw new InternalServerErrorException("Ошибка сервера");
 
@@ -80,11 +85,10 @@ export class AuthService {
     await this.updateRtHash(newUser.id, tokens.refresh_token);
     return {
       message: "Вы успешно зарегистрировались. Пожалуйста, подтвердите ваш email. Сообщение было отправлено на ваш почтовый адрес!",
-      data: tokens,
     };
   }
 
-  public async login(req: Request, dto: LoginDto) {
+  public async login(dto: LoginDto) {
     const user = await this.userService.findByEmail(dto.email);
     if (!user || !user.password) throw new NotFoundException("Пользователь не найден. Пожалуйста, проверьте введенные данные!");
 
@@ -98,23 +102,31 @@ export class AuthService {
       throw new UnauthorizedException("Ваш email не подтвержден. Пожалуйста, проверьте вашу почту и подтвердите адрес!");
     }
 
+    const tokens = await this.getTokens(user.id, user.email);
+    await this.updateRtHash(user.id, tokens.refresh_token);
+
     if (user.isTwoFactorEnabled) {
       if (!dto.code) {
         await this.twoFactorAuthService.sendTwoFactorToken(user.email);
 
         return {
           message: "Проверьте вашу почту. Требуется код двухфакторной аутентификации!",
+          data: {} as Tokens,
+          isTwoFactor: true,
         };
       }
 
-      await this.twoFactorAuthService.validateTwoFactorToken(user.email, dto.code);
+      const response = await this.twoFactorAuthService.validateTwoFactorToken(user.email, dto.code, tokens);
+      return {
+        ...response,
+        isTwoFactor: user.isTwoFactorEnabled,
+      };
     }
 
-    const tokens = await this.getTokens(user.id, user.email);
-    await this.updateRtHash(user.id, tokens.refresh_token);
     return {
       message: "Вы успешно авторизовались!",
       data: tokens,
+      isTwoFactor: user.isTwoFactorEnabled,
     };
   }
 
@@ -149,14 +161,14 @@ export class AuthService {
       return this.handleAuthenticatedUser(user);
     }
 
-    user = await this.userService.create(
-      profile.email,
-      "",
-      profile.name,
-      profile.picture,
-      AuthMethod[profile.provider.toUpperCase()],
-      true,
-    );
+    user = await this.userService.create({
+      email: profile.email,
+      password: "",
+      username: profile.name,
+      picture: profile.picture,
+      method: AuthMethod[profile.provider.toUpperCase()],
+      isVerified: true,
+    });
 
     if (!account) {
       await this.prismaService.account.create({
@@ -205,7 +217,7 @@ export class AuthService {
 
     if (!user || !user.hashedRt) throw new ForbiddenException("Access Denied");
 
-    const rtMatches = await verify(user.hashedRt, rt);
+    const rtMatches = await this.userService.compareHash(user.hashedRt, rt);
 
     if (!rtMatches) throw new ForbiddenException("Invalid refresh token");
 
@@ -216,5 +228,22 @@ export class AuthService {
       message: "Refresh token",
       data: tokens,
     };
+  }
+
+  public async isTokenExpired(refreshToken: string): Promise<boolean> {
+    try {
+      const decoded: any = jwt.decode(refreshToken);
+
+      if (!decoded || !decoded.exp) {
+        throw new Error("Invalid token");
+      }
+
+      const currentTimeInSeconds = Math.floor(Date.now() / 1000);
+
+      return decoded.exp < currentTimeInSeconds;
+    } catch (error) {
+      console.error("Error decoding token:", error.message);
+      return true;
+    }
   }
 }

@@ -6,7 +6,12 @@ import { ERouteNames } from "@/shared/utils/routes/path";
 import { routesWithHoc } from "./routes";
 import { privatePage, publicPage } from "@/entities/viewer";
 
-const HomePage = lazy(() => import("@pages/homePage"));
+const DashboardPage = lazy(() => import("@pages/dashboardPage"));
+const ProfilePage = lazy(() => import("@pages/profilePage"));
+const CommunitiesPage = lazy(() => import("@pages/communitiesPage"));
+const MessangerPage = lazy(() => import("@pages/messangerPage"));
+const SettingPage = lazy(() => import("@pages/settingPage"));
+
 const AuthPage = lazy(() => import("@pages/authPage/ui/authPage"));
 const VerificationPage = lazy(
   () => import("@pages/authPage/ui/verificationPage"),
@@ -17,6 +22,9 @@ const ResetPasswordPage = lazy(
 const NewPasswordPage = lazy(
   () => import("@pages/authPage/ui/newPasswordPage"),
 );
+
+const TwoFactorPage = lazy(() => import("@pages/authPage/ui/twoFactorPage"));
+
 const LoginPage = lazy(() => import("@pages/authPage/ui/loginPage"));
 const RegisterPage = lazy(() => import("@pages/authPage/ui/registerPage"));
 
@@ -29,11 +37,27 @@ export const routes = createBrowserRouter([
       ...routesWithHoc(privatePage, [
         {
           path: "",
-          element: <Navigate to={ERouteNames.HOME} replace />,
+          element: <Navigate to={ERouteNames.DASHBOARD} replace />,
         },
         {
-          path: ERouteNames.HOME,
-          element: <HomePage />,
+          path: ERouteNames.DASHBOARD,
+          element: <DashboardPage />,
+        },
+        {
+          path: ERouteNames.COMMUNITIES,
+          element: <CommunitiesPage />,
+        },
+        {
+          path: ERouteNames.MESSANGER,
+          element: <MessangerPage />,
+        },
+        {
+          path: ERouteNames.PROFILE,
+          element: <ProfilePage />,
+        },
+        {
+          path: ERouteNames.SETTINGS,
+          element: <SettingPage />,
         },
       ]),
     ],
@@ -67,6 +91,10 @@ export const routes = createBrowserRouter([
         {
           path: ERouteNames.NEW_PASSWORD,
           element: <NewPasswordPage />,
+        },
+        {
+          path: ERouteNames.TWO_FACTOR,
+          element: <TwoFactorPage />,
         },
       ]),
     ],

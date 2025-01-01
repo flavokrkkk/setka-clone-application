@@ -2,13 +2,19 @@ import { TypeLoginSchema, TypeRegisterSchema } from "@/features/auth/schemes";
 import { axiosAuth, axiosNoAuth } from "@/shared/api";
 import { EAuthEndpoints } from "./utils";
 import axios from "axios";
-import { IUser } from "@/entities/user/types/types";
 import { ApiResponse } from "../../../shared/api/types";
+import {
+  IAuthResponse,
+  ILoginResponse,
+  IRefreshResponse,
+} from "../types/types";
 
 class AuthService {
-  public async register(body: TypeRegisterSchema): Promise<ApiResponse<IUser>> {
+  public async register(
+    body: TypeRegisterSchema,
+  ): Promise<ApiResponse<IAuthResponse>> {
     try {
-      const { data } = await axiosNoAuth.post<ApiResponse<IUser>>(
+      const { data } = await axiosNoAuth.post<ApiResponse<IAuthResponse>>(
         EAuthEndpoints.REGISTER,
         body,
       );
@@ -21,21 +27,21 @@ class AuthService {
         const statusCode = err.response?.status || 500;
 
         return {
-          data: {} as IUser,
+          data: {} as IAuthResponse,
           message: serverMessage,
           error: serverError,
           statusCode,
         };
       } else if (err instanceof Error) {
         return {
-          data: {} as IUser,
+          data: {} as IAuthResponse,
           message: err.message || "Неизвестная ошибка",
           error: "Unknown",
           statusCode: 500,
         };
       } else {
         return {
-          data: {} as IUser,
+          data: {} as IAuthResponse,
           message: "Неизвестная ошибка на клиенте",
           error: "Unknown",
           statusCode: 500,
@@ -43,9 +49,9 @@ class AuthService {
       }
     }
   }
-  public async login(body: TypeLoginSchema): Promise<ApiResponse<IUser>> {
+  public async login(body: TypeLoginSchema): Promise<ILoginResponse> {
     try {
-      const { data } = await axiosNoAuth.post<ApiResponse<IUser>>(
+      const { data } = await axiosNoAuth.post<ILoginResponse>(
         EAuthEndpoints.LOGIN,
         body,
       );
@@ -55,27 +61,25 @@ class AuthService {
         const serverMessage =
           err.response?.data?.message || "Ошибка соединения с сервером";
         const serverError = err.response?.data?.error || "Ошибка";
-        const statusCode = err.response?.status || 500;
-
         return {
-          data: {} as IUser,
+          data: {} as ILoginResponse["data"],
+          isTwoFactor: false,
           message: serverMessage,
           error: serverError,
-          statusCode,
         };
       } else if (err instanceof Error) {
         return {
-          data: {} as IUser,
+          data: {} as ILoginResponse["data"],
+          isTwoFactor: false,
           message: err.message || "Неизвестная ошибка",
           error: "Unknown",
-          statusCode: 500,
         };
       } else {
         return {
-          data: {} as IUser,
+          data: {} as ILoginResponse["data"],
+          isTwoFactor: false,
           message: "Неизвестная ошибка на клиенте",
           error: "Unknown",
-          statusCode: 500,
         };
       }
     }
@@ -94,7 +98,18 @@ class AuthService {
       const response = await axiosAuth.post(EAuthEndpoints.LOGOUT);
       return response;
     } catch (err) {
-      Promise.reject(err);
+      return Promise.reject(err);
+    }
+  }
+
+  public async refreshToken(): Promise<ApiResponse<IRefreshResponse>> {
+    try {
+      const { data } = await axiosAuth.post<ApiResponse<IRefreshResponse>>(
+        EAuthEndpoints.REFRESH,
+      );
+      return data;
+    } catch (err) {
+      return Promise.reject(err);
     }
   }
 }

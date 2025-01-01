@@ -11,6 +11,8 @@ import { TwoFactorAuthService } from "./two-factor-auth/two-factor-auth.service"
 import { AtStrategy } from "./strategies/at.strategy";
 import { RtStrategy } from "./strategies/rt.strategy";
 import { JwtModule, JwtService } from "@nestjs/jwt";
+import { StorageModule } from "@/storage/storage.module";
+import { StorageService } from "@/storage/storage.service";
 
 @Module({
   imports: [
@@ -21,9 +23,10 @@ import { JwtModule, JwtService } from "@nestjs/jwt";
     }),
 
     forwardRef(() => EmailConfirmationModule),
+    StorageModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, UserService, MailService, TwoFactorAuthService, AtStrategy, RtStrategy, JwtService],
+  providers: [AuthService, UserService, MailService, TwoFactorAuthService, AtStrategy, RtStrategy, JwtService, StorageService],
   exports: [AuthService],
 })
 export class AuthModule {}

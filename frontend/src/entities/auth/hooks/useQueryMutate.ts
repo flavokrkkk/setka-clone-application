@@ -8,11 +8,12 @@ import { authService, verificateService } from "../libs";
 import { toastMessageHandler, toastSuccesHandler } from "@/shared/utils";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ERouteNames } from "@/shared/utils/routes/path";
-import { ApiResponse } from "../../../shared/api/types";
-import { IUser } from "@/entities/user/types/types";
 import { useRef } from "react";
 import { TypeResetPasswordSchema } from "@/features/auth/schemes/resetPasswordSchema";
 import { passwordRecoveryService } from "../libs/passwordRecorveryService";
+import { ILoginResponse } from "../types/types";
+import { TokenService } from "@/entities/token";
+import { useActions } from "@/shared/hooks/useActions";
 
 export const useRegisterMutation = () => {
   const { mutate: register, isPending: isLoadingRegister } = useMutation({
@@ -37,26 +38,32 @@ export const useRegisterMutation = () => {
   return { register, isLoadingRegister };
 };
 
-export const useLoginMutation = (
-  setIsShowMutation: React.Dispatch<React.SetStateAction<boolean>>,
-) => {
+export const useLoginMutation = () => {
   const navigate = useNavigate();
+  const { setTwoFactorAuthorizeData } = useActions();
 
   const { mutate: login, isPending: isLoadingLogin } = useMutation({
     mutationKey: ["login user"],
-    mutationFn: ({ values }: { values: TypeLoginSchema }) =>
-      authService.login(values),
-    onSuccess(data: ApiResponse<IUser>) {
+    mutationFn: ({ values }: { values: TypeLoginSchema }) => {
+      setTwoFactorAuthorizeData(values);
+      return authService.login(values);
+    },
+    onSuccess(data: ILoginResponse) {
       if (data.error) {
         toastMessageHandler(new Error(data.message));
         return;
       }
-      if (data.message) {
-        toastMessageHandler(data);
-        setIsShowMutation(true);
-      } else {
-        toastSuccesHandler("Успешная авторизация");
-        navigate(ERouteNames.HOME, { replace: true });
+      if (data.isTwoFactor) {
+        toastSuccesHandler(data.message);
+        navigate(ERouteNames.TWO_FACTOR, { replace: true });
+      }
+      if (!data.isTwoFactor) {
+        toastSuccesHandler(data.message);
+      }
+
+      if (data.data.access_token) {
+        TokenService.setAccessToken(data.data.access_token);
+        navigate(ERouteNames.DASHBOARD, { replace: true });
       }
     },
     onError(error) {
@@ -87,7 +94,7 @@ export const useVerificateMutation = () => {
     onSuccess() {
       if (!hasNavigated.current) {
         toastSuccesHandler("Почта успешно подтверждена!");
-        navigate(ERouteNames.HOME);
+        navigate(ERouteNames.DASHBOARD);
         hasNavigated.current = true;
       }
     },

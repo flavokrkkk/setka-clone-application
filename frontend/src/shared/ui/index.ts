@@ -6,3 +6,6 @@ export * from "./input";
 export * from "./sonner";
 export * from "./loader";
 export * from "./inputOtp";
+export * from "./command";
+export * from "./dialog";
+export * from "./avatar";
