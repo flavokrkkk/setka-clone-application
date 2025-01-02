@@ -18,7 +18,9 @@ async function bootstrap() {
       transform: true,
     }),
   );
+
   app.use(cookieParser(config.getOrThrow<string>("COOKIES_SECRET")));
+
   app.enableCors({
     origin: config.getOrThrow<string>("ALLOWED_ORIGIN"),
     credentials: true,
