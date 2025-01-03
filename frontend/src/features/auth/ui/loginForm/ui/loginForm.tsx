@@ -12,9 +12,9 @@ import {
   FormMessage,
 } from "@/shared/ui/form/form";
 import { CircleAlert } from "lucide-react";
-import AuthWrapper from "@/features/auth/ui/authWrapper";
 import clsx from "clsx";
 import { useLoginMutation } from "@/entities/auth/hooks/useQueryMutate";
+import AuthWrapper from "../../authWrapper/ui/authWrapper";
 
 const LoginForm = () => {
   const { login, isLoadingLogin } = useLoginMutation();

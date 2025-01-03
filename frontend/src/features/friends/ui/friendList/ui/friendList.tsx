@@ -29,7 +29,7 @@ const FriendList = () => {
   return friendMockList.map((friend) => (
     <div
       key={friend.id}
-      className="flex items-center justify-between space-x-5 bg-gray-200 p-2 rounded-lg"
+      className="flex items-center bg-gray-300 justify-between space-x-5 p-2 rounded-lg"
     >
       <UserBadge
         picture="https://github.com/shadcn.png"

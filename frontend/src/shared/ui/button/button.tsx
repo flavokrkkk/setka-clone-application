@@ -11,12 +11,12 @@ const buttonVariants = cva(
         default:
           "bg-primary rounded-xl text-primary-foreground hover:bg-primary/90",
         destructive:
-          "bg-destructive  rounded-xl text-destructive-foreground hover:bg-destructive/90",
+          "bg-destructive rounded-xl text-destructive-foreground hover:bg-destructive/90",
         outline:
           "border rounded-xl border-input bg-background hover:bg-accent hover:text-accent-foreground",
         secondary:
           "bg-violet-700 text-white rounded-xl text-secondary-foreground hover:bg-violet-800",
-        ghost: "rounded-xl hover:bg-accent hover:text-accent-foreground",
+        ghost: "rounded-xl bg-gray-300 hover:bg-gray-500",
         link: "text-primary rounded-xl underline-offset-4 hover:underline",
       },
       size: {

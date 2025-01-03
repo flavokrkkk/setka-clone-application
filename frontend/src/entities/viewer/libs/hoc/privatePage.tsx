@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useViewer } from "../../model/context";
 import { TokenService } from "@entities/token";
 import { ERouteNames } from "@/shared/utils/routes/path";
+import { Loader } from "@/shared/ui";
 
 export const privatePage = (children: React.ReactNode) => {
   return <PrivatePage>{children}</PrivatePage>;
@@ -24,9 +25,8 @@ const PrivatePage: FC<PropsWithChildren> = ({ children }) => {
       navigate(ERouteNames.LOGIN);
     }
   }, [pathname]);
-
   if (isLoading) {
-    return <h1>Loading....</h1>;
+    return <Loader />;
   }
 
   return isAuthenticated ? children : null;

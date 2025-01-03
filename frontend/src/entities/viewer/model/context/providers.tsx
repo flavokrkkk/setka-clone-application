@@ -24,16 +24,6 @@ export const ViewerProvider: FC<PropsWithChildren> = ({ children }) => {
     isAuthenticated: false,
   });
 
-  useEffect(() => {
-    const token = TokenService.getAccessToken();
-    if (token) {
-      setViewer({
-        isAuthenticated: true,
-        accessToken: token,
-      });
-    }
-  }, []);
-
   const handleLoginViewer = (accessToken: string) => {
     setViewer({
       isAuthenticated: true,
@@ -49,6 +39,16 @@ export const ViewerProvider: FC<PropsWithChildren> = ({ children }) => {
     });
     TokenService.deleteAccessToken();
   };
+
+  useEffect(() => {
+    const token = TokenService.getAccessToken();
+    if (token) {
+      setViewer({
+        isAuthenticated: true,
+        accessToken: token,
+      });
+    }
+  }, []);
 
   return (
     <ViewerContext.Provider

@@ -43,6 +43,7 @@ export class AxiosClient {
   }
 
   public addAuthResponseInterceptor() {
+    let isRefreshing = false;
     this.baseQueryV1Instance.interceptors.response.use(
       (response) => {
         return response;
@@ -52,6 +53,19 @@ export class AxiosClient {
 
         if (error.response?.status === 401 && !originalRequest._retry) {
           originalRequest._retry = true;
+
+          if (isRefreshing) {
+            await new Promise((resolve) => {
+              const interval = setInterval(() => {
+                if (!isRefreshing) {
+                  clearInterval(interval);
+                  resolve("");
+                }
+              }, 100);
+            });
+          }
+
+          isRefreshing = true;
 
           try {
             const {
@@ -64,11 +78,15 @@ export class AxiosClient {
               tokenService.deleteAccessToken();
             }
 
+            isRefreshing = false;
+
             return this.baseQueryV1Instance(originalRequest);
           } catch (error) {
             if (catchError(error) === "jwt expired") {
               tokenService.deleteAccessToken();
             }
+
+            isRefreshing = false;
 
             return Promise.reject(error);
           }

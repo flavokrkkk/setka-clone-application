@@ -1,9 +1,10 @@
 import { useUserMutation } from "@/entities/user/hooks/useQueryMutate";
+import UserControl from "@/features/user/ui/userControl/ui/userControl";
+import { Command, CommandInput, CommandList } from "@/shared/ui";
 import Aside from "@/widgets/aside/ui/aside";
 import Favorites from "@/widgets/favorites/ui/favorites";
 import Header from "@/widgets/header/ui/header";
 import Navigate from "@/widgets/navigate/ui/navigate";
-import { UserPen } from "lucide-react";
 import { useEffect } from "react";
 import { Outlet } from "react-router-dom";
 
@@ -16,10 +17,16 @@ const RootPage = () => {
 
   return (
     <div className="bg-black min-h-screen w-full flex overflow-x-hidden space-x-1">
-      <Aside className="min-h-screen">
-        <div className="flex">
+      <Aside className="min-h-screen w-[500px]">
+        <div className="flex w-full">
           <Navigate />
-          <Favorites />
+          <div className="flex flex-col w-full space-y-6 p-2">
+            <Command className="text-white bg-gray-300 h-9">
+              <CommandInput placeholder="Поиск" className="h-9" />
+              <CommandList />
+            </Command>
+            <Favorites />
+          </div>
         </div>
       </Aside>
       <div className="flex flex-col rounded-lg w-full">
@@ -32,6 +39,11 @@ const RootPage = () => {
           </main>
         </div>
       </div>
+      <Aside className="min-h-screen w-[350px] p-2">
+        <div className="flex w-full bg-gray-300 p-1 px-2 rounded-md">
+          <UserControl />
+        </div>
+      </Aside>
     </div>
   );
 };

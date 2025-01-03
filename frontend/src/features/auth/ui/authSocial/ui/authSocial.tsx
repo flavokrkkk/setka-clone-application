@@ -21,7 +21,7 @@ const AuthSocial = () => {
         type="button"
         value={"yandex"}
         className="w-full"
-        variant={"secondary"}
+        variant={"ghost"}
         onClick={handleConnectProvider}
       >
         <Icon type={IconTypes.YANDEX_OUTLINED} className="font-bold" />
@@ -31,7 +31,7 @@ const AuthSocial = () => {
         type="button"
         value={"google"}
         className="w-full"
-        variant={"secondary"}
+        variant={"ghost"}
         onClick={handleConnectProvider}
       >
         <Icon type={IconTypes.GOOGLE_OUTLINED} />

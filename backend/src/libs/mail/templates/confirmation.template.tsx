@@ -22,10 +22,10 @@ export function ConfirmationTemplate({ domain, token }: IConfirmationTemplatePro
             </Section>
 
             <Section className="text-center p-8">
-              <Text className="text-3xl font-extrabold text-gray-900">Добро пожаловать!</Text>
+              <Text className="text-3xl font-extrabold text-gray-900">🎉 Добро пожаловать!</Text>
               <Text className="text-md text-gray-700 mt-4 leading-relaxed">
-                Мы рады видеть вас на борту <span className="font-bold text-purple-600">Strife</span>! Завершите свою регистрацию,
-                подтвердив адрес электронной почты.
+                Ты на шаг ближе к захватывающим приключениям! Чтобы попасть в мир безумных возможностей, просто подтвердите свой адрес
+                электронной почты.
               </Text>
             </Section>
 
@@ -55,7 +55,8 @@ export function ConfirmationTemplate({ domain, token }: IConfirmationTemplatePro
 
             <Section className="bg-gray-100 py-4 text-center">
               <Text className="text-sm text-gray-500">
-                Если вы не регистрировались на {domain}, проигнорируйте это письмо. Этот email был отправлен автоматически.
+                Если это были не вы, и вы не регистрировались на платформе {domain} сразу измените пароль от вашей электронной почты для
+                повышения безопасности.
               </Text>
             </Section>
 

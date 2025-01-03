@@ -6,12 +6,12 @@ import { LoginDto } from "./dto/login.dto";
 import { AuthProviderGuard } from "./guards/provider.guard";
 import { ConfigService } from "@nestjs/config";
 import { ProviderService } from "./provider/provider.service";
-import { Tokens } from "./types/tokens.types";
 import { RtGuard } from "./guards/rt.guard";
 import { AtGuard } from "./guards/at.guard";
 import { GetCurrentUserId } from "./decorators/get-current-user-id.decorator";
 import { Public } from "./decorators/public.decorator";
 import { Cookies } from "./decorators/auth.cookies.decorator";
+import { createAtCookies, createRtCookies, removeAtCookies, removeRtCookies } from "./utils/createCookies";
 
 @Controller("auth")
 export class AuthController {
@@ -31,14 +31,11 @@ export class AuthController {
   @Public()
   @UseGuards(AuthProviderGuard)
   @Get("/oauth/callback/:provider")
-  public async callback(
-    @Req() req: Request,
-    @Res({ passthrough: true }) res: Response,
-    @Query("code") code: string,
-    @Param("provider") provider: string,
-  ) {
+  public async callback(@Res({ passthrough: true }) res: Response, @Query("code") code: string, @Param("provider") provider: string) {
     if (!code) throw new BadRequestException("Не был предоставлен код авторизации!");
-    await this.authService.extractProfileFromCode(req, provider, code);
+    const tokens = await this.authService.extractProfileFromCode(provider, code);
+    createRtCookies(res, tokens);
+    createAtCookies(res, tokens);
     return res.redirect(`${this.configService.getOrThrow<string>("ALLOWED_ORIGIN")}/dashboard`);
   }
 
@@ -57,19 +54,12 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   public async login(@Req() req: Request, @Res() res: Response, @Body() dto: LoginDto): Promise<void> {
     try {
-      const response = await this.authService.login(dto);
-      console.log("Refresh Token Cookies:", response.data.refresh_token);
-      res.cookie("refresh_token", response.data.refresh_token, {
-        httpOnly: true,
-        secure: false,
-        sameSite: "strict",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-      });
-
+      const { data, isTwoFactor, message } = await this.authService.login(dto);
+      createRtCookies(res, data);
       res.status(HttpStatus.OK).json({
-        message: response.message,
-        data: { access_token: response.data.access_token },
-        isTwoFactor: response.isTwoFactor,
+        message: message,
+        data: { access_token: data.access_token },
+        isTwoFactor: isTwoFactor,
       });
     } catch (error) {
       res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
@@ -83,7 +73,8 @@ export class AuthController {
   @Post("logout")
   @HttpCode(HttpStatus.OK)
   public async logout(@GetCurrentUserId() userId: string, @Res() res: Response): Promise<void> {
-    res.clearCookie("refresh_token", { httpOnly: true, secure: true, sameSite: "strict" });
+    removeRtCookies(res);
+    removeAtCookies(res);
     return this.authService.logout(userId);
   }
   @Public()
@@ -99,19 +90,9 @@ export class AuthController {
       throw new BadRequestException("Refresh token is missing.");
     }
 
-    // const isTokenExpired = await this.authService.isTokenExpired(refreshToken); // Ваша проверка истечения срока
-    // if (!isTokenExpired) {
-    //   return { message: "Refresh token is still valid", data: null };
-    // }
-
     const { data, message } = await this.authService.refreshToken(userId, refreshToken);
 
-    res.cookie("refresh_token", data.refresh_token, {
-      httpOnly: true,
-      secure: false,
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    createRtCookies(res, data);
 
     return {
       message,

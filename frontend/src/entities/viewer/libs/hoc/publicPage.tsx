@@ -3,6 +3,7 @@ import { useViewer } from "../../model/context";
 import { TokenService } from "@entities/token";
 import { useNavigate } from "react-router-dom";
 import { ERouteNames } from "@/shared/utils/routes/path";
+import { Loader } from "@/shared/ui";
 
 export const publicPage = (children: React.ReactNode) => {
   return <PublicPage>{children}</PublicPage>;
@@ -25,8 +26,8 @@ const PublicPage: FC<PropsWithChildren> = ({ children }) => {
   }, [loginViewer, navigate]);
 
   if (isLoading) {
-    return <h1>Loading...</h1>;
+    return <Loader />;
   }
 
-  return <div>{children}</div>;
+  return children;
 };
